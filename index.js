@@ -13,9 +13,10 @@ const cli = meow(
 	  $ cbb
 
 	Options
-	  --conference, -c  filter by conference
+    --conference, -c   filter by conference
+    --ap               show AP top 25 teams
 
-	Examples
+	Example
 	  $ cbb --conference big-ten
 `,
   {
@@ -23,6 +24,9 @@ const cli = meow(
       conference: {
         type: 'string',
         alias: 'c'
+      },
+      ap: {
+        type: 'boolean'
       }
     }
   }
@@ -55,42 +59,54 @@ const cbb = async flags => {
 
   const formattedGames = games
     .filter(filterGamesByConference)
+    .filter(filterByRanking)
     .map(formatGameOutput);
 
-  function filterGamesByConference({ game }) {
+  function filterByRanking({ game: { home, away } }) {
+    return flags.ap
+      ? parseInt(home.rank) <= 25 || parseInt(away.rank) <= 25
+      : true;
+  }
+
+  function filterGamesByConference({ game: { home, away } }) {
     return (
       !flags.conference ||
-      game.home.conferenceNames.conferenceName.toLowerCase() ===
-        flags.conference ||
-      game.home.conferenceNames.conferenceSeo.toLowerCase() ===
-        flags.conference ||
-      game.away.conferenceNames.conferenceName.toLowerCase() ===
-        flags.conference ||
-      game.away.conferenceNames.conferenceSeo.toLowerCase() === flags.conference
+      home.conferenceNames.conferenceName.toLowerCase() === flags.conference ||
+      home.conferenceNames.conferenceSeo.toLowerCase() === flags.conference ||
+      away.conferenceNames.conferenceName.toLowerCase() === flags.conference ||
+      away.conferenceNames.conferenceSeo.toLowerCase() === flags.conference
     );
   }
 
-  function formatGameOutput({ game }) {
+  function formatGameOutput({
+    game: {
+      home,
+      away,
+      gameState,
+      startTimeEpoch,
+      contestClock,
+      network,
+      currentPeriod
+    }
+  }) {
     const team = isWinner => text => (isWinner ? clc.green.bold(text) : text);
-    const awayTeam = team(game.away.winner);
-    const homeTeam = team(game.home.winner);
+    const awayTeam = team(away.winner);
+    const homeTeam = team(home.winner);
 
     const details =
-      game.gameState === 'pre'
-        ? `${format(parseInt(game.startTimeEpoch) * 1000, 'h:mm A')} ${
-            game.network
-          }`
-        : `${awayTeam(game.away.score)}   ${game.currentPeriod}\n${homeTeam(
-            game.home.score
-          )}   ${game.gameState === 'live' ? game.contestClock : ''}`;
+      gameState === 'pre'
+        ? `${format(parseInt(startTimeEpoch) * 1000, 'h:mm A')} ${network}`
+        : `${awayTeam(away.score)}   ${currentPeriod}\n${homeTeam(
+            home.score
+          )}   ${gameState === 'live' ? contestClock : ''}`;
 
     const ranking = rank => (rank ? `(${rank})` : '');
 
     return [
       `${awayTeam(
-        `${game.away.names.short} ${ranking(game.away.seed || game.away.rank)}`
+        `${away.names.short} ${ranking(away.seed || away.rank)}`
       )}\n${homeTeam(
-        `${game.home.names.short} ${ranking(game.home.seed || game.home.rank)}`
+        `${home.names.short} ${ranking(home.seed || home.rank)}`
       )}`,
       details
     ];
@@ -99,7 +115,7 @@ const cbb = async flags => {
   table.push(...formattedGames);
 
   if (!table.length) {
-    console.log(`\n  No games scheduled for ${flags.c}\n`);
+    console.log(`\n  No games scheduled.\n`);
   } else {
     console.log(table.toString());
   }
