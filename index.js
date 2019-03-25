@@ -27,7 +27,12 @@ const date = '2019/03/24';
         : `${awayTeam(away.score)}   ${currentPeriod}\n${homeTeam(home.score)}   ${
         gameState === 'live' ? contestClock : ''
         }`
-      table.push([`${awayTeam(away.names.short)}\n${homeTeam(home.names.short)}`, details])
+      const ranking = rank => rank ? `(${rank})` : '';
+      table.push([`${
+        awayTeam(`${away.names.short} ${ranking(away.seed || away.rank)}`)
+        }\n${
+        homeTeam(`${home.names.short} ${ranking(home.seed || home.rank)}`)
+        }`, details])
     })
   console.log(table.toString())
 })()
