@@ -9,13 +9,13 @@ const meow = require('meow')
 
 const cli = meow(`
 	Usage
-	  $ ncaa
+	  $ cbb
 
 	Options
-	  --conference, -c  filter by converence
+	  --conference, -c  filter by conference
 
 	Examples
-	  $ ncaa --conference big-ten
+	  $ cbb --conference big-ten
 `, {
     flags: {
       conference: {
@@ -25,7 +25,7 @@ const cli = meow(`
     }
   });
 
-const ncaa = async (flags) => {
+const cbb = async (flags) => {
   const date = format(new Date(), 'YYYY/MM/DD')
   const table = new Table({
     head: ['Teams', 'Score'].map(text => clc.bold.white(text)),
@@ -54,7 +54,7 @@ const ncaa = async (flags) => {
         currentPeriod,
         contestClock,
         gameState,
-        startTime,
+        startTimeEpoch,
         network
       } = game;
 
@@ -64,19 +64,24 @@ const ncaa = async (flags) => {
       const awayTeam = team(away.winner)
       const homeTeam = team(home.winner)
       const details = gameState === 'pre'
-        ? `${startTime} ${network}`
+        ? `${format(parseInt(startTimeEpoch) * 1000, 'h:mm A')} ${network}`
         : `${awayTeam(away.score)}   ${currentPeriod}\n${homeTeam(home.score)}   ${
-        gameState === 'live' ? contestClock : ''
+          gameState === 'live' ? contestClock : ''
         }`
       const ranking = rank => rank ? `(${rank})` : '';
       table.push([`${
         awayTeam(`${away.names.short} ${ranking(away.seed || away.rank)}`)
-        }\n${
+      }\n${
         homeTeam(`${home.names.short} ${ranking(home.seed || home.rank)}`)
-        }`, details])
+      }`, details])
     })
+
+  if (!table.length) {
+    console.log(`\n  No games scheduled for ${flags.c}\n`)
+    return
+  }
 
   console.log(table.toString())
 }
 
-ncaa(cli.flags)
+cbb(cli.flags)
