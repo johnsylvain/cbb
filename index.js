@@ -4,16 +4,22 @@
 const fetch = require('node-fetch');
 const clc = require('cli-color');
 const Table = require('cli-table');
-
-const date = '2019/03/24';
+const { format } = require('date-fns');
 
 (async () => {
+  const date = format(new Date(), 'YYYY/MM/DD')
   const table = new Table({
     head: [clc.bold.white('Teams'), clc.bold.white('Score')],
     colWidths: [20, 20]
   })
   const res = await fetch(`https://data.ncaa.com/casablanca/scoreboard/basketball-men/d1/${date}/scoreboard.json`)
   const { games } = await res.json();
+
+  if (!games && !games.length) {
+    console.log('No scheduled games for today. :(')
+    return
+  }
+
   games
     .map(({ game }) => {
       const { away, home, currentPeriod, contestClock, gameState } = game;
