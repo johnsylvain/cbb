@@ -16,29 +16,39 @@ const { format } = require('date-fns');
   const { games } = await res.json();
 
   if (!games && !games.length) {
-    console.log('No scheduled games for today. :(')
+    console.log('\n  No scheduled games for today. :(\n')
     return
   }
 
   games
     .map(({ game }) => {
-      const { away, home, currentPeriod, contestClock, gameState } = game;
+      const {
+        away,
+        home,
+        currentPeriod,
+        contestClock,
+        gameState,
+        startTime,
+        network
+      } = game;
+
       const team = isWinner => text => isWinner
         ? clc.green.bold(text)
         : text
       const awayTeam = team(away.winner)
       const homeTeam = team(home.winner)
       const details = gameState === 'pre'
-        ? `${game.startTime} ${game.network}`
+        ? `${startTime} ${network}`
         : `${awayTeam(away.score)}   ${currentPeriod}\n${homeTeam(home.score)}   ${
-        gameState === 'live' ? contestClock : ''
+          gameState === 'live' ? contestClock : ''
         }`
       const ranking = rank => rank ? `(${rank})` : '';
       table.push([`${
-        awayTeam(`${away.names.short} ${ranking(away.seed || away.rank)}`)
+          awayTeam(`${away.names.short} ${ranking(away.seed || away.rank)}`)
         }\n${
-        homeTeam(`${home.names.short} ${ranking(home.seed || home.rank)}`)
+          homeTeam(`${home.names.short} ${ranking(home.seed || home.rank)}`)
         }`, details])
     })
+
   console.log(table.toString())
 })()
