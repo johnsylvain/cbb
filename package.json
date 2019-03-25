@@ -1,11 +1,12 @@
 {
   "name": "ncaa",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "main": "index.js",
   "license": "MIT",
+  "description": "NCAA game times and live scores",
   "repository": {
     "type": "git",
-    "url": "git://github.com/johnsylvain/ncaa.git"
+    "url": "https://github.com/johnsylvain/ncaa"
   },
   "bin": {
     "ncaa": "index.js"
