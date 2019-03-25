@@ -1,0 +1,11 @@
+{
+  "name": "ncaa",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "cli-color": "^1.4.0",
+    "cli-table": "^0.3.1",
+    "node-fetch": "^2.3.0"
+  }
+}
