@@ -1,15 +1,15 @@
 {
-  "name": "ncaa",
-  "version": "0.0.2",
+  "name": "cbb",
+  "version": "0.0.1",
   "main": "index.js",
   "license": "MIT",
-  "description": "NCAA game times and live scores",
+  "description": "College Basketball game times and live scores",
   "repository": {
     "type": "git",
-    "url": "https://github.com/johnsylvain/ncaa"
+    "url": "https://github.com/johnsylvain/cbb"
   },
   "bin": {
-    "ncaa": "index.js"
+    "cbb": "index.js"
   },
   "dependencies": {
     "cli-color": "^1.4.0",
