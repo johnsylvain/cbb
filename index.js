@@ -34,7 +34,7 @@ const cli = meow(
 
 const cbb = async flags => {
   const table = new Table({
-    head: ['Teams', 'Score'].map(text => clc.bold.white(text)),
+    head: ['Teams', 'Score'].map(text => clc.bold.magenta(text)),
     colWidths: [20, 20]
   });
 
@@ -45,7 +45,7 @@ const cbb = async flags => {
     )}/scoreboard.json`
   );
 
-  if (response.status > 299) {
+  if (response.status >= 400) {
     console.log("\n Couldn't fetch any games.\n");
     return;
   }
@@ -90,6 +90,7 @@ const cbb = async flags => {
     }
   }) {
     const team = isWinner => text => (isWinner ? clc.green.bold(text) : text);
+    const ranking = rank => (rank ? `(${rank})` : '');
     const awayTeam = team(away.winner);
     const homeTeam = team(home.winner);
 
@@ -99,8 +100,6 @@ const cbb = async flags => {
         : `${awayTeam(away.score)}   ${currentPeriod}\n${homeTeam(
             home.score
           )}   ${gameState === 'live' ? contestClock : ''}`;
-
-    const ranking = rank => (rank ? `(${rank})` : '');
 
     return [
       `${awayTeam(
