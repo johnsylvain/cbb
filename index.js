@@ -15,9 +15,11 @@ const cli = meow(
 	Options
     --conference, -c   filter by conference
     --ap               show AP top 25 teams
+    --tv               show televised games
 
-	Example
+	Examples
 	  $ cbb --conference big-ten
+	  $ cbb --tv
 `,
   {
     flags: {
@@ -58,8 +60,12 @@ const cbb = async flags => {
   }
 
   const formattedGames = games
-    .filter(filterGamesByConference)
-    .filter(filterByRanking)
+    .filter(
+      game =>
+        filterByNetwork(game) &&
+        filterByRanking(game) &&
+        filterGamesByConference(game)
+    )
     .map(formatGameOutput);
 
   function filterByRanking({ game: { home, away } }) {
@@ -76,6 +82,10 @@ const cbb = async flags => {
       away.conferenceNames.conferenceName.toLowerCase() === flags.conference ||
       away.conferenceNames.conferenceSeo.toLowerCase() === flags.conference
     );
+  }
+
+  function filterByNetwork({ game }) {
+    return !flags.tv || !!game.network;
   }
 
   function formatGameOutput({
