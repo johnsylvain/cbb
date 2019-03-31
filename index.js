@@ -9,17 +9,17 @@ const meow = require('meow');
 
 const cli = meow(
   `
-	Usage
-	  $ cbb
+  Usage
+    $ cbb
 
-	Options
+  Options
     --conference, -c   filter by conference
     --ap               show AP top 25 teams
     --tv               show televised games
 
-	Examples
-	  $ cbb --conference big-ten
-	  $ cbb --tv
+  Examples
+    $ cbb --conference big-ten
+    $ cbb --tv
 `,
   {
     flags: {
