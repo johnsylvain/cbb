@@ -36,8 +36,7 @@ const cli = meow(
 
 const cbb = async flags => {
   const table = new Table({
-    head: ['Teams', 'Score'].map(text => clc.bold.magenta(text)),
-    colWidths: [20, 20]
+    head: ['Teams', 'Score'].map(text => clc.bold.magenta(text))
   });
 
   const response = await fetch(
@@ -107,9 +106,10 @@ const cbb = async flags => {
     const details =
       gameState === 'pre'
         ? `${format(parseInt(startTimeEpoch) * 1000, 'h:mm A')} ${network}`
-        : `${awayTeam(away.score)}   ${currentPeriod}\n${homeTeam(
-            home.score
-          )}   ${gameState === 'live' ? contestClock : ''}`;
+        : `${awayTeam(away.score)}   ${currentPeriod}${network &&
+            ` - ${network}`}\n${homeTeam(home.score)}   ${
+            gameState === 'live' ? contestClock : ''
+          }`;
 
     return [
       `${awayTeam(
