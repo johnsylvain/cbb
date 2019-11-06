@@ -15,11 +15,12 @@ const cli = meow(
   Options
     --conference, -c   filter by conference
     --ap               show AP top 25 teams
-    --tv               show televised games
+    --name             filter by team name
 
   Examples
     $ cbb --conference big-ten
     $ cbb --tv
+    $ cbb --name purdue
 `,
   {
     flags: {
@@ -29,6 +30,9 @@ const cli = meow(
       },
       ap: {
         type: 'boolean'
+      },
+      name: {
+        type: 'string'
       }
     }
   }
@@ -61,7 +65,7 @@ const cbb = async flags => {
   const formattedGames = games
     .filter(
       game =>
-        filterByNetwork(game) &&
+        filterByName(game) &&
         filterByRanking(game) &&
         filterGamesByConference(game)
     )
@@ -74,17 +78,21 @@ const cbb = async flags => {
   }
 
   function filterGamesByConference({ game: { home, away } }) {
+    const predicate = conference =>
+      conference.conferenceSeo.toLowerCase() === flags.conference ||
+      conference.conferenceSeo.toLowerCase() === flags.conference;
+
     return (
       !flags.conference ||
-      home.conferenceNames.conferenceName.toLowerCase() === flags.conference ||
-      home.conferenceNames.conferenceSeo.toLowerCase() === flags.conference ||
-      away.conferenceNames.conferenceName.toLowerCase() === flags.conference ||
-      away.conferenceNames.conferenceSeo.toLowerCase() === flags.conference
+      home.conferences.some(predicate) ||
+      away.conferences.some(predicate)
     );
   }
 
-  function filterByNetwork({ game }) {
-    return !flags.tv || !!game.network;
+  function filterByName({ game }) {
+    const match = team =>
+      team.names.full.toLowerCase().includes(flags.name.toLowerCase());
+    return !flags.name || match(game.home) || match(game.away);
   }
 
   function formatGameOutput({
