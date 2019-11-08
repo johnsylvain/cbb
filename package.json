@@ -1,6 +1,6 @@
 {
   "name": "cbb",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "main": "index.js",
   "license": "MIT",
   "description": "College Basketball game times and live scores",

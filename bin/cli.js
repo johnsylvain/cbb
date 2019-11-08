@@ -19,7 +19,7 @@ const cli = meow(
 
   Examples
     $ cbb --conference big-ten
-    $ cbb --tv
+    $ cbb --ap
     $ cbb --name purdue
 `,
   {
@@ -32,7 +32,8 @@ const cli = meow(
         type: 'boolean'
       },
       name: {
-        type: 'string'
+        type: 'string',
+        alias: 'n'
       }
     }
   }
@@ -59,6 +60,25 @@ const cbb = async flags => {
 
   if (!games && !games.length) {
     console.log('\n  No scheduled games for today. :(\n');
+    return;
+  }
+
+  if (flags.conference === '') {
+    const conferences = games.reduce((acc, { game }) => {
+      const home = game.home.conferences[0].conferenceSeo;
+      const away = game.away.conferences[0].conferenceSeo;
+
+      return {
+        ...acc,
+        [home]: true,
+        [away]: true
+      };
+    }, {});
+    console.log(
+      `\nPlease specify a conference: \n\n${Object.keys(conferences)
+        .sort()
+        .join('\n')}`
+    );
     return;
   }
 

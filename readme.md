@@ -19,10 +19,10 @@ cbb --help
 # Filter by AP top 25
 cbb --ap
 
-# Filter by televised games
-cbb --tv
-
 # Filter by conference
 cbb --conference big-ten
 cbb -c big-ten
+
+# Filter by name
+cbb --name purdue
 ```
