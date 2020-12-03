@@ -6,6 +6,8 @@ const clc = require('cli-color');
 const Table = require('cli-table');
 const { format } = require('date-fns');
 const meow = require('meow');
+const inquirer = require('inquirer');
+const clear = require('clear');
 
 const cli = meow(
   `
@@ -16,6 +18,10 @@ const cli = meow(
     --conference, -c   filter by conference
     --ap               show AP top 25 teams
     --name             filter by team name
+
+  Commands
+    $ cbb              list games/scores
+    $ cbb watch        watch game live
 
   Examples
     $ cbb --conference big-ten
@@ -39,7 +45,91 @@ const cli = meow(
   }
 );
 
-const cbb = async flags => {
+const watchGame = async () => {
+  const response = await fetch(
+    `https://data.ncaa.com/casablanca/scoreboard/basketball-men/d1/${format(
+      new Date(),
+      'YYYY/MM/DD'
+    )}/scoreboard.json`
+  );
+  const { games } = await response.json();
+  const choices = games
+    .filter(game => {
+      return game.game.gameState === 'live';
+    })
+    .map(game => {
+      return {
+        value: game.game.url.split('/')[2],
+        name: `${game.game.away.names.short} vs ${game.game.home.names.short}`
+      };
+    });
+
+  if (!choices.length) {
+    console.log('\n\tThere are no live games right now.');
+    return;
+  }
+
+  const prompt = await inquirer.prompt([
+    {
+      type: 'list',
+      name: 'game',
+      message: 'What game do you want to watch?',
+      choices
+    }
+  ]);
+
+  const url = `https://data.ncaa.com/casablanca/game/${
+    prompt.game
+    // 5761249
+  }/gameInfo.json`;
+
+  const createTable = async () => {
+    const res = await fetch(url);
+    const game = await res.json();
+    clear();
+    const table = new Table();
+    table.push([
+      `${clc.bold(game.away.score)}\n${game.away.names.short} ${
+        game.away.record
+      }`,
+      `${clc.bold(game.home.score)}\n${game.home.names.short} ${
+        game.home.record
+      }`
+    ]);
+    table.push([
+      game.status.clock
+        ? `${clc.yellow.bold(game.status.clock)}`
+        : clc.bold(game.status.finalMessage),
+      game.status.clock
+        ? `${clc.yellow.bold(game.status.finalMessage)}`
+        : clc.bold(game.status.finalMessage)
+    ]);
+    console.log(table.toString());
+    if (game.status.finalMessage === 'FINAL') {
+      return true;
+    }
+  };
+
+  poll(async stop => {
+    const shouldStop = await createTable();
+    if (shouldStop) {
+      stop();
+    }
+  }, 5000);
+  createTable();
+};
+
+const poll = (cb, interval) => {
+  const id = setInterval(() => cb(() => clearInterval(id)), interval);
+  return () => clearInterval(id);
+};
+
+const cbb = async (flags, input) => {
+  if (input === 'watch') {
+    await watchGame();
+    return;
+  }
+
   const table = new Table({
     head: ['Teams', 'Score'].map(text => clc.bold.magenta(text))
   });
@@ -158,4 +248,4 @@ const cbb = async flags => {
   }
 };
 
-cbb(cli.flags);
+cbb(cli.flags, cli.input[0]);

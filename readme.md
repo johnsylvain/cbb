@@ -5,8 +5,8 @@
 ![screenshot](./screenshot.png)
 
 ## Usage
-You can install globally with `npm install -g cbb` or use with `npx`.
 
+You can install globally with `npm install -g cbb` or use with `npx`.
 
 ```bash
 # Usage
@@ -25,4 +25,7 @@ cbb -c big-ten
 
 # Filter by name
 cbb --name purdue
+
+# watch live games
+cbb watch
 ```
